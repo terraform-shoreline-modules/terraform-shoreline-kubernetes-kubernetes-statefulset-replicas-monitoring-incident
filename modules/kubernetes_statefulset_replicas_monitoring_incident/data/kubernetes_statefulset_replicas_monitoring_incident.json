@@ -1,0 +1,154 @@
+{
+  "name": "kubernetes_statefulset_replicas_monitoring_incident",
+  "description": "This incident type involves monitoring the replicas of a Kubernetes Statefulset, which is a type of workload in Kubernetes used for stateful applications. The incident is triggered when more than one replica's pods are down, creating an unsafe situation for manual operations. This incident is critical and requires immediate attention to resolve the issue and ensure the smooth functioning of the stateful applications.",
+  "params": [
+    {
+      "name": "MEMORY_THRESHOLD_IN_BYTES",
+      "value": ""
+    },
+    {
+      "name": "KUBE_STATEFUL_SET",
+      "value": ""
+    },
+    {
+      "name": "POD_NAME",
+      "value": ""
+    },
+    {
+      "name": "SERVICE",
+      "value": ""
+    },
+    {
+      "name": "CPU_THRESHOLD_IN_MILLICORES",
+      "value": ""
+    },
+    {
+      "name": "DISK_THRESHOLD_IN_PERCENT",
+      "value": ""
+    },
+    {
+      "name": "KUBE_NAMESPACE",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Kubernetes Statefulset Replicas Monitoring Incident\nThis incident type involves monitoring the replicas of a Kubernetes Statefulset, which is a type of workload in Kubernetes used for stateful applications. The incident is triggered when more than one replica's pods are down, creating an unsafe situation for manual operations. This incident is critical and requires immediate attention to resolve the issue and ensure the smooth functioning of the stateful applications."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Get the desired number of replicas for the specified Statefulset"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get statefulset ${KUBE_STATEFUL_SET} -n ${KUBE_NAMESPACE} -o=jsonpath='{.spec.replicas}'`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Get the number of ready replicas for the specified Statefulset"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get statefulset ${KUBE_STATEFUL_SET} -n ${KUBE_NAMESPACE} -o=jsonpath='{.status.readyReplicas}'`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Get the number of currently running replicas for the specified Statefulset"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get statefulset ${KUBE_STATEFUL_SET} -n ${KUBE_NAMESPACE} -o=jsonpath='{.status.currentReplicas}'`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Get the number of replicas that are currently unavailable for the specified Statefulset"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get statefulset ${KUBE_STATEFUL_SET} -n ${KUBE_NAMESPACE} -o=jsonpath='{.status.unavailableReplicas}'`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Get the status of all the pods belonging to the specified Statefulset"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl get pods -n ${KUBE_NAMESPACE} -l app=${KUBE_STATEFUL_SET} -o=custom-columns=NAME:.metadata.name,STATUS:.status.phase`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Get the logs of the specified pod"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | limit=1 | random=1 | `kubectl logs ${POD_NAME} -n ${KUBE_NAMESPACE}`"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Resource constraints: Resource constraints such as CPU, memory, or disk space issues can cause the Kubernetes Statefulset replicas to stop functioning. This can lead to the triggering of the incident mentioned above."
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_statefulset_health_check($MEMORY_THRESHOLD_IN_BYTES, $KUBE_STATEFUL_SET, $CPU_THRESHOLD_IN_MILLICORES, $DISK_THRESHOLD_IN_PERCENT)"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Network issues: Network issues such as DNS resolution failure, network connectivity issues, or firewall configuration errors can cause the Kubernetes Statefulset replicas to stop functioning. As a result, this could trigger the incident mentioned above."
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_kubectl_statefulset_network_check($POD_NAME, $SERVICE)"
+    },
+    {
+      "name": "cell_18",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Scale up the number of replicas to ensure that the desired state is achieved and the workload is available."
+    },
+    {
+      "name": "cell_19",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "pod | k8s_cluster_name=$K8S_CLUSTER_NAME | app='shoreline' | random=1 | limit=1 | invoke_scale_up_statefulset()"
+    }
+  ]
+}
